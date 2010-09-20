@@ -16,4 +16,11 @@ describe PagesController do
     end
   end
 
+  describe "GET 'about'" do
+    it "should be successful" do
+     get 'contact'
+     respinds.should be_success
+    end
+  end
+
 end
