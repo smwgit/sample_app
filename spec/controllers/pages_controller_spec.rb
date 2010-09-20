@@ -18,8 +18,8 @@ describe PagesController do
 
   describe "GET 'about'" do
     it "should be successful" do
-     get 'contact'
-     respinds.should be_success
+     get 'about'
+     response.should be_success
     end
   end
 
