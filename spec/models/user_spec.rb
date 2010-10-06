@@ -121,46 +121,49 @@ describe User do
     end
   end
   
-  describe "DELETE 'destroy'" do
+  describe "micropost associations" do
 
     before(:each) do
-      @user = Factory(:user)
+      @user = User.create(@attr)
     end
 
-    describe "as a non-signed-in user" do
-      it "should deny access" do
-        delete :destroy, :id => @user
-        response.should redirect_to(signin_path)
-      end
-    end
-
-    describe "as a non-admin user" do
-      it "should protect the page" do
-        test_sign_in(@user)
-        delete :destroy, :id => @user
-        response.should redirect_to(root_path)
-      end
-    end
-
-    describe "as an admin user" do
-
-      before(:each) do
-        admin = Factory(:user, :email => "admin@example.com", :admin => true)
-        test_sign_in(admin)
-      end
-
-      it "should destroy the user" do
-        lambda do
-          delete :destroy, :id => @user
-        end.should change(User, :count).by(-1)
-      end
-
-      it "should redirect to the users page" do
-        delete :destroy, :id => @user
-        response.should redirect_to(users_path)
-      end
+    it "should have a microposts attribute" do
+      @user.should respond_to(:microposts)
     end
   end
   
+  describe "micropost associations" do
   
+    before(:each) do
+      @user = User.create(@attr)
+      @mp1 = Factory(:micropost, :user => @user, :created_at => 1.day.ago)
+      @mp2 = Factory(:micropost, :user => @user, :created_at => 1.hour.ago)
+    end
+
+    it "should have a microposts attribute" do
+      @user.should respond_to(:microposts)
+    end
+
+    it "should have the right microposts in the right order" do
+      @user.microposts.should == [@mp2, @mp1]
+    end
+    
+    describe "status feed" do
+
+      it "should have a feed" do
+        @user.should respond_to(:feed)
+      end
+  
+      it "should include the user's microposts" do
+        @user.feed.include?(@mp1).should be_true
+        @user.feed.include?(@mp2).should be_true
+      end
+  
+      it "should not include a different user's microposts" do
+        mp3 = Factory(:micropost,
+                      :user => Factory(:user, :email => Factory.next(:email)))
+        @user.feed.include?(mp3).should be_false
+      end
+    end
+  end
 end
